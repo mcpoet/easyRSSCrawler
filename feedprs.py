@@ -1,3 +1,5 @@
+#coding=utf-8
+
 import feedparser
 import time
 import os, sys
@@ -7,16 +9,12 @@ from pymongo import MongoClient
 from datetime import datetime
 from stat import *
 from DBConfig import *
-
-import logging  
-logging.basicConfig(filename = os.path.join(os.getcwd(), 'crawllog'), level = logging.INFO)  
-log = logging.getLogger('root.test')  
-log.setLevel(logging.INFO)  #日志记录级别为WARNNING  
-# log.info('info')    #不会被记录  
+from loogger import crawlogger
 
 client = MongoClient()
 db = client[dbName]
 newsfeeds = db[collectionName]
+
 
 class Crawler(object):
 	"""docstring for Crawler
@@ -55,13 +53,13 @@ class Crawler(object):
 		repeated = newsfeeds.find_one({"title":item0["title"], "link":item0["link"]})
 		# print "THere existed some like %s of the same guid" %(repeated)
 		if repeated:
-			log("XXXXXXXXXX Existed GUID:%s" %("xxxx"))
+			crawlogger.debug("XXXXXXXXXX Existed GUID:%s" %("xxxx"))
 			return 0;
 		else :
 			_id = feedstore.save()
-			print "OOOOOOOOOO NewLy!!!!!!!: %s\n" %(_id)
-			print "TITLE: %s" %(item0["title"])
-			print "LINK : %s" %(item0["link"])
+			crawlogger.info("OOOOOOOOOO NewLy!!!!!!!: %s\n" %(_id))
+			crawlogger.info("TITLE: %s" %(item0["title"]))
+			crawlogger.info( "LINK : %s" %(item0["link"]))
 			# print "DESCP: %s\n" %(item0["description"])
 			# print "GUID: %s"  %(item0["link"])
 			return 1;
@@ -69,7 +67,7 @@ class Crawler(object):
 	def crawl(self):
 		feed = feedparser.parse(self.channels[0])
 		items = feed["items"]
-		print "items : %d" %(len(items))
+		crawlogger.info("items : %d" %(len(items)))
 		# print items[0]
 		minutes = 0
 		for x in xrange(0,len(items)):
@@ -78,7 +76,6 @@ class Crawler(object):
 		if len(items):
 			newly = float(minutes)/float(len(entries))
 			# self.minutes =5*(1-newly)
-		
 		return self.minutes
 
 	def spide(self):
@@ -97,11 +94,11 @@ class Crawler(object):
 		minutes = 0
 		for item in entries:
 			minutes += self.saveFeed(item)
-		print "NewLy Fetched %d Feeds between %d entries" %(minutes, len(entries))
+		crawlogger.info("NewLy Fetched %d Feeds between %d entries" %(minutes, len(entries)))
 		if len(entries):
 			newly = float(minutes)/float(len(entries))
 			self.minutes =5*(1-newly)
-		print "%s : Gonnoa have a %d minutes SNAP" %(datetime.now(), self.minutes)
+		crawlogger.info("%s : Gonnoa have a %d minutes SNAP" %(datetime.now(), self.minutes))
 		return self.minutes
 
 	def creep(self, spider):
@@ -115,7 +112,7 @@ class Crawler(object):
 			self.minutes = self.spide()
 			self.updateChannelList()
 			time.sleep(self.minutes*60)
-			print "%d MINUTES, wake up and crawl ....\n" %(self.minutes)
+			crawlogger.info("%d MINUTES, wake up and crawl ....\n" %(self.minutes))
 
 	def rest(self):
 		self.hush = False;
@@ -136,10 +133,9 @@ class Crawler(object):
 			       	d[key] = val
 			       	a.append(val.lstrip())
 			self.channels = a
-			print "Fetched from FS %s" %(a)
+			crawlogger.info("Fetched from FS %s" %(a))
 
 if __name__ == '__main__':	
-	print("Main...ing")
 	cawler = Crawler("channels")
 	cawler.creep(0)
 
