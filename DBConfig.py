@@ -1,0 +1,2 @@
+dbName = "MightyVoty"
+collectionName = "newsfeeds"
