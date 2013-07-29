@@ -8,6 +8,12 @@ from datetime import datetime
 from stat import *
 from DBConfig import *
 
+import logging  
+logging.basicConfig(filename = os.path.join(os.getcwd(), 'crawllog'), level = logging.INFO)  
+log = logging.getLogger('root.test')  
+log.setLevel(logging.INFO)  #日志记录级别为WARNNING  
+# log.info('info')    #不会被记录  
+
 client = MongoClient()
 db = client[dbName]
 newsfeeds = db[collectionName]
@@ -49,7 +55,7 @@ class Crawler(object):
 		repeated = newsfeeds.find_one({"title":item0["title"], "link":item0["link"]})
 		# print "THere existed some like %s of the same guid" %(repeated)
 		if repeated:
-			print "XXXXXXXXXX Existed GUID:%s" %("xxxx")
+			log("XXXXXXXXXX Existed GUID:%s" %("xxxx"))
 			return 0;
 		else :
 			_id = feedstore.save()
